@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -14,6 +15,8 @@ public class Hoster extends Thread{
     private ServerSocket socket;
 
     private ArrayList<User> users = new ArrayList<>();
+
+    private HashMap<Address, Address> virtualServers = new HashMap<>();
 
 
     public static void main(String[] args) throws IOException {
@@ -41,8 +44,26 @@ public class Hoster extends Thread{
 
         }
 
+        File serversFile = new File("virtualservers.servers");
+        if(!serversFile.exists()){
+            writeResource("virtualservers.servers", serversFile);
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(serversFile)));
+
+        String line;
+        while((line = reader.readLine()) != null){
+            line = line.trim();
+            if(line.isEmpty()) continue;
+            String[] parts = line.split(" ");
+
+
+        }
+
         socket = new ServerSocket(port);
     }
+
+
 
     @Override
     public void run() {
