@@ -25,7 +25,7 @@ public class User extends Thread{
                 try {
                     in.read();
                 } catch (IOException e) {
-                    System.out.println("com.ithinkrok.virtualhost.User server error:");
+                    System.out.println("User server error:");
                     e.printStackTrace();
                     return;
                 }
@@ -66,7 +66,7 @@ public class User extends Thread{
                     server.out.write(in.read());
                 }
             } catch(IOException e){
-                System.out.println("com.ithinkrok.virtualhost.User client error:");
+                System.out.println("User client error:");
                 e.printStackTrace();
                 return;
             }
