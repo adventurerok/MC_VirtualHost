@@ -18,9 +18,14 @@ public class Hoster extends Thread{
 
     private HashMap<Address, Address> virtualServers = new HashMap<>();
 
+    private static Hoster instance;
+
+    public static Hoster getInstance() {
+        return instance;
+    }
 
     public static void main(String[] args) throws IOException {
-        Hoster host = new Hoster();
+        Hoster host = instance = new Hoster();
 
         host.start();
     }
@@ -57,12 +62,20 @@ public class Hoster extends Thread{
             if(line.isEmpty()) continue;
             String[] parts = line.split(" ");
 
+            Address incoming = new Address(parts[0]);
+            Address virtual = new Address(parts[1]);
 
+            virtualServers.put(incoming, virtual);
+
+            System.out.println("Converting " + incoming.toString() + " to " + virtual.toString());
         }
 
         socket = new ServerSocket(port);
     }
 
+    public Address getVirtualAddress(Address external){
+        return virtualServers.get(external);
+    }
 
 
     @Override
@@ -71,7 +84,11 @@ public class Hoster extends Thread{
             try {
                 Socket user = socket.accept();
 
+                //System.out.println("Used connected");
+
                 User u = new User(user);
+
+                u.start();
 
                 users.add(u);
             } catch (IOException e) {

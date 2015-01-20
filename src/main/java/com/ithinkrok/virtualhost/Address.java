@@ -18,7 +18,8 @@ public class Address {
 
         hostname = parts[0].trim();
 
-        port = Integer.parseInt(parts[1]);
+        if(parts.length > 1) port = Integer.parseInt(parts[1].trim());
+        else port = 25565;
     }
 
     @Override
@@ -39,5 +40,10 @@ public class Address {
         int result = hostname != null ? hostname.hashCode() : 0;
         result = 31 * result + port;
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return hostname + ":" + port;
     }
 }
