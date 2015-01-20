@@ -2,6 +2,8 @@
   <dictionary name="paul">
     <words>
       <w>hoster</w>
+      <w>ints</w>
+      <w>virtualhost</w>
     </words>
   </dictionary>
 </component>
