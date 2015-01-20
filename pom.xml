@@ -8,5 +8,38 @@
     <artifactId>MC_VirtualHost</artifactId>
     <version>0.1-SNAPSHOT</version>
 
+    <build>
+        <directory>target</directory>
+        <outputDirectory>target/classes</outputDirectory>
+        <finalName>MC-VirtualHost</finalName>
+        <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        <defaultGoal>clean package</defaultGoal>
+
+        <resources>
+            <resource>
+                <targetPath>.</targetPath>
+                <filtering>true</filtering>
+                <directory>${basedir}/src/main/resources</directory>
+                <includes>
+                    <include>config.properties</include>
+                    <include>virtualservers.servers</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+            </plugin>
+        </plugins>
+    </build>
+
     
 </project>
