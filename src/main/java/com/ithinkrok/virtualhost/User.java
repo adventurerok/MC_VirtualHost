@@ -1,5 +1,8 @@
 package com.ithinkrok.virtualhost;
 
+import com.ithinkrok.virtualhost.io.MinecraftInputStream;
+import com.ithinkrok.virtualhost.io.MinecraftOutputStream;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -10,13 +13,13 @@ public class User extends Thread{
 
     private class UserServer extends Thread {
         public Socket socket;
-        public DataInputStream in;
-        public DataOutputStream out;
+        public MinecraftInputStream in;
+        public MinecraftOutputStream out;
 
         public UserServer(Socket socket) throws IOException {
             this.socket = socket;
-            this.in = new DataInputStream(socket.getInputStream());
-            this.out = new DataOutputStream(socket.getOutputStream());
+            this.in = new MinecraftInputStream(socket.getInputStream());
+            this.out = new MinecraftOutputStream(socket.getOutputStream());
         }
 
         @Override
@@ -34,14 +37,14 @@ public class User extends Thread{
     UserServer server;
 
     Socket client;
-    DataInputStream in;
-    DataOutputStream out;
+    MinecraftInputStream in;
+    MinecraftOutputStream out;
 
     public User(Socket client) throws IOException {
         this.client = client;
 
-        in = new DataInputStream(this.client.getInputStream());
-        out = new DataOutputStream(this.client.getOutputStream());
+        in = new MinecraftInputStream(this.client.getInputStream());
+        out = new MinecraftOutputStream(this.client.getOutputStream());
 
     }
 
@@ -50,21 +53,25 @@ public class User extends Thread{
         while(!client.isClosed()){
             try {
                 if(server == null){
-                    int packetLength = readVarInt(in);
+                    int packetLength = in.readVarInt();
 
                     byte[] packet = readBytes(packetLength);
-                    DataInputStream packetIn = new DataInputStream(new ByteArrayInputStream(packet));
+                    MinecraftInputStream packetIn = new MinecraftInputStream(new ByteArrayInputStream(packet));
 
-                    int packetId = readVarInt(packetIn);
-                    if(packetId != 0){
-                        System.out.println("PacketId " + packetId + " instead of 0, continuing (this is error)");
+                    int packetId = packetIn.readVarInt();
+                    if(packetId > 1){
+                        System.out.println("PacketId " + packetId + " instead of 0, continuing");
+                        continue;
+                    } else if(packetId == 1){
+                        out.writeVarInt(packetLength);
+                        out.write(packet);
                         continue;
                     }
 
-                    readVarInt(packetIn);
-                    String address = readUTF8(packetIn);
+                    packetIn.readVarInt();
+                    String address = packetIn.readString();
                     int port = packetIn.readUnsignedShort();
-                    int nextState = readVarInt(packetIn);
+                    int nextState = packetIn.readVarInt();
 
                     connectToServer(address, port, nextState, packet);
                 } else {
@@ -82,7 +89,8 @@ public class User extends Thread{
         System.out.println("User " + client.getRemoteSocketAddress().toString() + " is connecting");
 
         address = address.trim();
-        if(address.endsWith("FML")) address = address.substring(0, address.length() - 3);
+        int nullIndex = address.indexOf("\0");
+        if(nullIndex > -1) address = address.substring(0, nullIndex); //so FML can connect
 
         //address = address.replaceAll("(?i)[(\\[{]?null[)\\]}]?", "");
         Address us = new Address(address, port);
@@ -90,6 +98,16 @@ public class User extends Thread{
         Address out = Hoster.getInstance().getVirtualAddress(us);
         if(out == null){
             System.out.println("- Unknown incoming address: " + us.toString());
+
+            if(nextState == 1){
+                System.out.println("- Sending default ping to client");
+
+                packet = Hoster.getInstance().getDefaultStatus();
+
+                this.out.writeVarInt(packet.length);
+                this.out.write(packet);
+            }
+            return;
         } else {
             System.out.println("- Forwarding " + us + " to " + out);
         }
@@ -104,10 +122,12 @@ public class User extends Thread{
 
         server = new UserServer(socket);
 
-        writeVarInt(server.out, packet.length);
+        server.out.writeVarInt(packet.length);
         server.out.write(packet);
 
         server.start();
+
+
 
 
     }
@@ -120,55 +140,6 @@ public class User extends Thread{
         return bytes;
     }
 
-    private int readVarInt(DataInputStream in) throws IOException {
-        int out = 0;
-        byte b;
-        for(int d = 0; ; ++d){
-            b = in.readByte();
-
-            out ^= (b & 127) << (d * 7);
-
-            if((b & 128) == 0) return out;
-        }
-    }
-
-    private void writeVarInt(DataOutputStream out, int var) throws IOException {
-        while(true){
-            byte b = 0;
-            if(var > 127) b |= 128;
-
-            b |= (var & 127);
-            out.writeByte(b);
-
-            var >>= 7;
-
-            if(var == 0) break;
-        }
-    }
-
-    private String readUTF8(DataInputStream in) throws IOException {
-        int length = readVarInt(in);
-
-        StringBuilder str = new StringBuilder();
-
-        for(int d = 0; d < length; ++d){
-            byte b0 = in.readByte();
-
-            if((b0 & 128) == 0){
-                if(b0 == 0) continue;
-                str.append((char)b0);
-                continue;
-            }
-
-            byte b1 = in.readByte();
-
-            //if((b1 & 0b11000000) == 0b11000000){
-                //str.append()
-            //}
-        }
-
-        return str.toString();
-    }
 
 
 

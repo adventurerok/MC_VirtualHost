@@ -1,5 +1,7 @@
 package com.ithinkrok.virtualhost;
 
+import com.ithinkrok.virtualhost.io.MinecraftOutputStream;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,7 +20,13 @@ public class Hoster extends Thread{
 
     private HashMap<Address, Address> virtualServers = new HashMap<>();
 
+    private byte[] defaultStatus;
+
     private static Hoster instance;
+
+    private String defaultVersion = "1.8";
+    private String defaultProtocol = "5";
+    private String defaultDescription = "{\"text\":\"Unknown virtual host\"}";
 
     public static Hoster getInstance() {
         return instance;
@@ -47,6 +55,10 @@ public class Hoster extends Thread{
                 return;
             }
 
+            defaultVersion = props.getProperty("default_version", "1.8");
+            defaultProtocol = props.getProperty("default_protocol", "5");
+            defaultDescription = props.getProperty("default_description", "{\"text\":\"Unknown virtual host\"}");
+
         }
 
         File serversFile = new File("virtualservers.servers");
@@ -69,6 +81,8 @@ public class Hoster extends Thread{
 
             System.out.println("Converting " + incoming.toString() + " to " + virtual.toString());
         }
+
+        getDefaultStatus();
 
         socket = new ServerSocket(port);
     }
@@ -110,6 +124,46 @@ public class Hoster extends Thread{
 
         }
 
+
+    }
+
+    public byte[] getDefaultStatus() throws IOException {
+        if(defaultStatus != null) return  defaultStatus;
+
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+
+        MinecraftOutputStream out = new MinecraftOutputStream(byteOut);
+
+        out.writeVarInt(0);
+
+        StringBuilder json = new StringBuilder();
+
+        json.append("{");
+
+        json.append("\"version\": {");
+        json.append("\"name\": \"");
+        json.append(defaultVersion);
+        json.append("\",");
+
+        json.append("\"protocol\": ");
+        json.append(defaultProtocol);
+        json.append("},");
+
+        json.append("\"players\": {");
+        json.append("\"max\": 0,");
+        json.append("\"online\": 0");
+        json.append("},");
+
+        json.append("\"description\": ");
+        json.append(defaultDescription);
+
+        json.append("}");
+
+        out.writeString(json.toString());
+
+        byte[] bytes = byteOut.toByteArray();
+
+        return defaultStatus = bytes;
 
     }
 }
