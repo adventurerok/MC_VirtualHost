@@ -26,6 +26,9 @@ public class Hoster extends Thread{
 
     public static final Logger LOGGER = Logger.getLogger("MCVH");
 
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_RESET = "\u001B[0m";
+
 
     private String defaultVersion = "1.8";
     private String defaultProtocol = "5";

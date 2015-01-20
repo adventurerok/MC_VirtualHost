@@ -118,7 +118,7 @@ public class User extends Thread{
         if(nextState == 1){
             Hoster.LOGGER.info("- User is just pinging the server");
         } else if(nextState == 2){
-            Hoster.LOGGER.info("- User is connecting to the server");
+            Hoster.LOGGER.info("- " + Hoster.ANSI_GREEN + "User is connecting to the server" + Hoster.ANSI_RESET);
         }
 
         Socket socket = new Socket(out.hostname, out.port);
