@@ -5,9 +5,9 @@ import com.ithinkrok.virtualhost.io.MinecraftOutputStream;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 /**
  * Created by paul on 19/01/15.
@@ -23,6 +23,9 @@ public class Hoster extends Thread{
     private byte[] defaultStatus;
 
     private static Hoster instance;
+
+    public static final Logger LOGGER = Logger.getLogger("MCVH");
+
 
     private String defaultVersion = "1.8";
     private String defaultProtocol = "5";
@@ -51,7 +54,7 @@ public class Hoster extends Thread{
             try{
                 port = Integer.parseInt(props.getProperty("port", "25565"));
             } catch (NumberFormatException e){
-                System.out.println("Invalid port. Exiting");
+                LOGGER.severe("Invalid port. Exiting");
                 return;
             }
 
@@ -79,7 +82,7 @@ public class Hoster extends Thread{
 
             virtualServers.put(incoming, virtual);
 
-            System.out.println("Converting " + incoming.toString() + " to " + virtual.toString());
+            LOGGER.info("Converting " + incoming.toString() + " to " + virtual.toString());
         }
 
         getDefaultStatus();
@@ -106,7 +109,7 @@ public class Hoster extends Thread{
 
                 //users.add(u);
             } catch (IOException e) {
-                System.out.println("Exception when accepting user");
+                LOGGER.severe("Exception when accepting user");
                 e.printStackTrace();
                 return;
             }

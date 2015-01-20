@@ -3,11 +3,14 @@ package com.ithinkrok.virtualhost;
 import com.ithinkrok.virtualhost.io.MinecraftInputStream;
 import com.ithinkrok.virtualhost.io.MinecraftOutputStream;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.Socket;
 
 /**
  * Created by paul on 19/01/15.
+ *
+ * Handles a connection between a user and a server
  */
 public class User extends Thread{
 
@@ -60,7 +63,7 @@ public class User extends Thread{
 
                     int packetId = packetIn.readVarInt();
                     if(packetId > 1){
-                        System.out.println("PacketId " + packetId + " instead of 0, continuing");
+                        Hoster.LOGGER.warning("PacketId " + packetId + " instead of 0, continuing");
                         continue;
                     } else if(packetId == 1){
                         out.writeVarInt(packetLength);
@@ -78,7 +81,7 @@ public class User extends Thread{
                     server.out.write(in.read());
                 }
             } catch(IOException e){
-                System.out.println("User " + client.getRemoteSocketAddress().toString() + " disconnected");
+                Hoster.LOGGER.info("User " + client.getRemoteSocketAddress().toString() + " disconnected");
                 return;
             }
         }
@@ -86,7 +89,7 @@ public class User extends Thread{
 
 
     private void connectToServer(String address, int port, int nextState, byte[] packet) throws IOException {
-        System.out.println("User " + client.getRemoteSocketAddress().toString() + " is connecting");
+        Hoster.LOGGER.info("User " + client.getRemoteSocketAddress().toString() + " is connecting");
 
         address = address.trim();
         int nullIndex = address.indexOf("\0");
@@ -97,10 +100,10 @@ public class User extends Thread{
 
         Address out = Hoster.getInstance().getVirtualAddress(us);
         if(out == null){
-            System.out.println("- Unknown incoming address: " + us.toString());
+            Hoster.LOGGER.info("- Unknown incoming address: " + us.toString());
 
             if(nextState == 1){
-                System.out.println("- Sending default ping to client");
+                Hoster.LOGGER.info("- Sending default ping to client");
 
                 packet = Hoster.getInstance().getDefaultStatus();
 
@@ -109,13 +112,13 @@ public class User extends Thread{
             }
             return;
         } else {
-            System.out.println("- Forwarding " + us + " to " + out);
+            Hoster.LOGGER.info("- Forwarding " + us + " to " + out);
         }
 
         if(nextState == 1){
-            System.out.println("- User is just pinging the server");
+            Hoster.LOGGER.info("- User is just pinging the server");
         } else if(nextState == 2){
-            System.out.println("- User is connecting to the server");
+            Hoster.LOGGER.info("- User is connecting to the server");
         }
 
         Socket socket = new Socket(out.hostname, out.port);
