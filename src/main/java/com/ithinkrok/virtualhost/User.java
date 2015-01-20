@@ -25,8 +25,6 @@ public class User extends Thread{
                 try {
                     User.this.out.write(in.read());
                 } catch (IOException e) {
-                    System.out.println("User server error:");
-                    e.printStackTrace();
                     return;
                 }
             }
@@ -59,7 +57,7 @@ public class User extends Thread{
 
                     int packetId = readVarInt(packetIn);
                     if(packetId != 0){
-                        System.out.println("PacketId " + packetId + " instead of 0, continuing");
+                        System.out.println("PacketId " + packetId + " instead of 0, continuing (this is error)");
                         continue;
                     }
 
@@ -73,8 +71,7 @@ public class User extends Thread{
                     server.out.write(in.read());
                 }
             } catch(IOException e){
-                System.out.println("User client error:");
-                e.printStackTrace();
+                System.out.println("User " + client.getRemoteSocketAddress().toString() + " disconnected");
                 return;
             }
         }
@@ -82,6 +79,8 @@ public class User extends Thread{
 
 
     private void connectToServer(String address, int port, int nextState, byte[] packet) throws IOException {
+        System.out.println("User " + client.getRemoteSocketAddress().toString() + " is connecting");
+
         address = address.trim();
         if(address.endsWith("FML")) address = address.substring(0, address.length() - 3);
 
@@ -90,9 +89,15 @@ public class User extends Thread{
 
         Address out = Hoster.getInstance().getVirtualAddress(us);
         if(out == null){
-            System.out.println("Unknown incoming address: " + us.toString());
+            System.out.println("- Unknown incoming address: " + us.toString());
         } else {
-            System.out.println("Forwarding " + us + " to " + out);
+            System.out.println("- Forwarding " + us + " to " + out);
+        }
+
+        if(nextState == 1){
+            System.out.println("- User is just pinging the server");
+        } else if(nextState == 2){
+            System.out.println("- User is connecting to the server");
         }
 
         Socket socket = new Socket(out.hostname, out.port);

@@ -14,7 +14,7 @@ public class Hoster extends Thread{
 
     private ServerSocket socket;
 
-    private ArrayList<User> users = new ArrayList<>();
+    //private ArrayList<User> users = new ArrayList<>();
 
     private HashMap<Address, Address> virtualServers = new HashMap<>();
 
@@ -90,9 +90,9 @@ public class Hoster extends Thread{
 
                 u.start();
 
-                users.add(u);
+                //users.add(u);
             } catch (IOException e) {
-                System.out.println("Exception when accepting: ");
+                System.out.println("Exception when accepting user");
                 e.printStackTrace();
                 return;
             }
