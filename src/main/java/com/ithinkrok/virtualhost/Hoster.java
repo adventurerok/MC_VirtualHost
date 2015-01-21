@@ -27,7 +27,7 @@ public class Hoster extends Thread {
     public static final Logger LOGGER = Logger.getLogger("MCVH");
 
     static{
-        LOGGER.
+
     }
 
     public static final String ANSI_GREEN = "\u001B[32m";
@@ -43,6 +43,7 @@ public class Hoster extends Thread {
     }
 
     public static void main(String[] args) throws IOException {
+
         Hoster host = instance = new Hoster();
 
         host.start();
