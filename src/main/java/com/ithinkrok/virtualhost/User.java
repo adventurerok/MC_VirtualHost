@@ -31,6 +31,11 @@ public class User extends Thread{
                 try {
                     User.this.out.write(in.read());
                 } catch (IOException e) {
+                    if(!client.isClosed()){
+                        try{
+                            client.close();
+                        } catch (IOException ignored) {}
+                    }
                     return;
                 }
             }
@@ -82,6 +87,15 @@ public class User extends Thread{
                 }
             } catch(IOException e){
                 Hoster.LOGGER.info("User " + client.getRemoteSocketAddress().toString() + " disconnected");
+
+                if(!server.socket.isClosed()){
+                    try{
+                        server.socket.close();
+                    } catch (IOException ignored) {
+
+                    }
+                }
+
                 return;
             }
         }
