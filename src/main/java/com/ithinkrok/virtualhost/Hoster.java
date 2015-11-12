@@ -100,6 +100,16 @@ public class Hoster extends Thread {
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(serversFile)));
 
+        loadConversionsFromBufferedReader(reader);
+
+        reader.close();
+
+        getDefaultStatus();
+
+        socket = new ServerSocket(port);
+    }
+
+    public void loadConversionsFromBufferedReader(BufferedReader reader) throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
             line = line.trim();
@@ -113,12 +123,6 @@ public class Hoster extends Thread {
 
             LOGGER.info("Converting " + incoming.toString() + " to " + virtual.toString());
         }
-
-        reader.close();
-
-        getDefaultStatus();
-
-        socket = new ServerSocket(port);
     }
 
     public Address getVirtualAddress(Address external) {
@@ -164,19 +168,7 @@ public class Hoster extends Thread {
 
         ConcurrentHashMap<Address, Address> newVirtualServers = new ConcurrentHashMap<>();
 
-        String line;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            if (line.isEmpty()) continue;
-            String[] parts = line.split(" ");
-
-            Address incoming = new Address(parts[0]);
-            Address virtual = new Address(parts[1]);
-
-            newVirtualServers.put(incoming, virtual);
-
-            LOGGER.info("Converting " + incoming.toString() + " to " + virtual.toString());
-        }
+        loadConversionsFromBufferedReader(reader);
 
         virtualServers = newVirtualServers;
 
